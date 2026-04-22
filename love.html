@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compte à rebours romantique</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: linear-gradient(135deg, #2b1233, #4a0c3c, #8a0b3f, #d61a4c, #ff4b82);
+      background-size: 400% 400%;
+      animation: bgGradient 15s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+      color: #fff;
+      text-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+    }
+
+    @keyframes bgGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .bokeh {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bokeh-circle {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent);
+      border-radius: 50%;
+      filter: blur(20px);
+      opacity: 0.4;
+      animation: floatBokeh 20s infinite ease-in-out;
+    }
+
+    @keyframes floatBokeh {
+      0% { transform: translateY(0) translateX(0) scale(0.8); }
+      25% { transform: translateY(-20vh) translateX(10vw) scale(1.1); }
+      50% { transform: translateY(-40vh) translateX(-5vw) scale(0.9); }
+      75% { transform: translateY(-20vh) translateX(-15vw) scale(1.2); }
+      100% { transform: translateY(0) translateX(0) scale(0.8); }
+    }
+
+    .hearts {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 16px;
+      color: rgba(255, 120, 180, 0.7);
+      opacity: 0.8;
+      animation: floatHeart linear infinite;
+    }
+
+    @keyframes floatHeart {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0.1; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.5; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 1000px;
+      width: 90vw;
+      position: relative;
+      z-index: 2;
+    }
+
+    .message {
+      font-family: 'Brush Script MT', cursive, Georgia, serif;
+      font-size: clamp(1.2rem, 3vw, 2.2rem);
+      color: #ffe6f2;
+      margin-bottom: 2rem;
+      letter-spacing: 1px;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1.5s forwards 0.3s;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .countdown {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      font-family: Georgia, serif;
+    }
+
+    .unit {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 0.8rem 1.2rem;
+      min-width: 100px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                  box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .unit::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .unit.pulse::before {
+      opacity: 1;
+    }
+
+    .unit:hover {
+      transform: translateY(-6px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .value {
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      font-weight: 600;
+      letter-spacing: -1px;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 120, 180, 0.8);
+      transition: color 0.3s ease, transform 0.15s ease;
+    }
+
+    .unit.pulse .value {
+      transform: scale(1.12);
+      color: #ffd1e6;
+    }
+
+    .label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #ffe6f2;
+      margin-top: 0.3rem;
+      opacity: 0.9;
+    }
+
+    .unit-update {
+      animation: popValue 0.2s ease-out;
+    }
+
+    @keyframes popValue {
+      0%   { transform: scale(0.8); opacity: 0.7; }
+      70%  { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 1.8rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-panel::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
+      opacity: 0.4;
+      pointer-events: none;
+      animation: rotateGradient 60s linear infinite;
+    }
+
+    @keyframes rotateGradient {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .end-text {
+      margin-top: 1.2rem;
+      font-size: clamp(1rem, 2.2vw, 1.6rem);
+      color: #fff8fb;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .end-text.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sound-toggle {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #ffe6f2;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      user-select: none;
+      opacity: 0.85;
+      transition: opacity 0.2s ease;
+    }
+
+    .sound-toggle:hover {
+      opacity: 1;
+    }
+
+    .sound-toggle input {
+      transform: scale(1.3);
+    }
+
+    .sound-toggle span {
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 600px) {
+      .unit {
+        min-width: 80px;
+        padding: 0.6rem 0.8rem;
+      }
+
+      .value {
+        font-size: 2.2rem;
+      }
+
+      .label {
+        font-size: 0.75rem;
+      }
+
+      .message {
+        font-size: 1.3rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .value {
+        font-size: 1.8rem;
+      }
+
+      .countdown {
+        gap: 0.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bokeh" id="bokeh"></div>
+  <div class="hearts" id="hearts"></div>
+
+  <div class="container">
+    <div class="glass-panel">
+      <p class="message">
+        Chaque seconde qui passe me rapproche un peu plus de toi…<br>
+        Bientôt, tout changera.
+      </p>
+
+      <div class="countdown" id="countdown">
+        <div class="unit" id="days">
+          <span class="value">00</span>
+          <span class="label">jours</span>
+        </div>
+        <div class="unit" id="hours">
+          <span class="value">00</span>
+          <span class="label">heures</span>
+        </div>
+        <div class="unit" id="minutes">
+          <span class="value">00</span>
+          <span class="label">minutes</span>
+        </div>
+        <div class="unit" id="seconds">
+          <span class="value">00</span>
+          <span class="label">secondes</span>
+        </div>
+        <div class="unit" id="milliseconds">
+          <span class="value">000</span>
+          <span class="label">millisecondes</span>
+        </div>
+      </div>
+
+      <p class="end-text" id="end-text">
+        ❤️ Le moment est arrivé.
+      </p>
+
+      <label class="sound-toggle">
+        <input type="checkbox" id="sound-toggle" />
+        <span>Effet sonore discret</span>
+      </label>
+    </div>
+  </div>
+
+  <script>
+    const targetDate = new Date('2026-04-24T20:00:00'); // 24 avril 2026 20h00
+
+    const $days       = document.getElementById('days');
+    const $hours      = document.getElementById('hours');
+    const $minutes    = document.getElementById('minutes');
+    const $seconds    = document.getElementById('seconds');
+    const $ms         = document.getElementById('milliseconds');
+    const $endText    = document.getElementById('end-text');
+    const $soundToggle = document.getElementById('sound-toggle');
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    function playSubtleTick() {
+      if (!$soundToggle.checked) return;
+      try {
+        const osc   = audioContext.createOscillator();
+        const gain  = audioContext.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.04, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.15);
+      } catch (err) {
+        console.warn('Erreur audio :', err);
+      }
+    }
+
+    function createBokeh() {
+      const parent = document.getElementById('bokeh');
+      const count  = 15;
+      for (let i = 0; i < count; i++) {
+        const circle = document.createElement('div');
+        circle.classList.add('bokeh-circle');
+
+        const size     = 60 + Math.random() * 140;
+        const top      = Math.random() * 100;
+        const left     = Math.random() * 100;
+        const duration = 15 + Math.random() * 20;
+
+        circle.style.width  = `${size}px`;
+        circle.style.height = `${size}px`;
+        circle.style.top    = `${top}%`;
+        circle.style.left   = `${left}%`;
+        circle.style.filter = `blur(${Math.max(15, size / 5)}px)`;
+        circle.style.animationDuration = `${duration}s`;
+        circle.style.animationDelay    = `${Math.random() * 10}s`;
+
+        parent.appendChild(circle);
+      }
+    }
+
+    function createHearts() {
+      const container = document.getElementById('hearts');
+      const count     = 40;
+      for (let i = 0; i < count; i++) {
+        const heart = document.createElement('span');
+        heart.classList.add('heart');
+        heart.textContent = '❤️';
+
+        const size     = 0.8 + Math.random() * 2.2;
+        const left     = Math.random() * 100;
+        const duration = 15 + Math.random() * 20;
+
+        heart.style.fontSize      = `${size}rem`;
+        heart.style.left          = `${left}vw`;
+        heart.style.animationDuration = `${duration}s`;
+        heart.style.animationDelay    = `${Math.random() * 10}s`;
+
+        container.appendChild(heart);
+      }
+    }
+
+    function padZero(num, digits = 2) {
+      return num.toString().padStart(digits, '0');
+    }
+
+    function formatMs(ms) {
+      return padZero(Math.floor(ms % 1000), 3);
+    }
+
+    function updateUnit($unit, newValue, tag = 'span') {
+      const $value = $unit.querySelector(tag);
+      $value.classList.add('unit-update');
+      $value.textContent = newValue;
+
+      $unit.classList.add('pulse');
+      setTimeout(() => {
+        $unit.classList.remove('pulse');
+      }, 300);
+
+      setTimeout(() => {
+        $value.classList.remove('unit-update');
+      }, 200);
+    }
+
+    let lastMsUpdate = 0;
+    function startCountdown() {
+      function loop(now) {
+        const diff = Math.max(0, targetDate.getTime() - Date.now());
+
+        if (diff === 0) {
+          $endText.classList.add('visible');
+          return;
+        }
+
+        if (now - lastMsUpdate > 16) {
+          lastMsUpdate = now;
+
+          const days    = Math.floor(diff / 86400000);
+          const hours   = Math.floor((diff % 86400000) / 3600000);
+          const minutes = Math.floor((diff % 3600000) / 60000);
+          const seconds = Math.floor((diff % 60000) / 1000);
+          const ms      = diff % 1000;
+
+          updateUnit($days,     padZero(days));
+          updateUnit($hours,    padZero(hours));
+          updateUnit($minutes,  padZero(minutes));
+          updateUnit($seconds,  padZero(seconds));
+          updateUnit($ms,       formatMs(ms), '.value');
+
+          if (Math.floor(diff / 1000) !== Math.floor((diff - 16) / 1000)) {
+            playSubtleTick();
+          }
+        }
+
+        requestAnimationFrame(loop);
+      }
+
+      createBokeh();
+      createHearts();
+      requestAnimationFrame(loop);
+    }
+
+    // Lancer le compteur quand la page est chargée
+    document.addEventListener('DOMContentLoaded', startCountdown);
+  </script>
+</body>
+</html>
